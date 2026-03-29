@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Docsila Test Suite">
+    <listeners>
+        <listener class-name="utilities.ExtentReportManager"/>
+    </listeners>
+
+    <test name="Login Test">
+        <classes>
+            <class name="testCase.TC_01_LoginPage"/>
+            <class name="testCase.TC_02_LoginPageSorting"/>
+        </classes>
+    </test>
+</suite>
