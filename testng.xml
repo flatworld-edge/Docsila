@@ -5,10 +5,12 @@
         <listener class-name="utilities.ExtentReportManager"/>
     </listeners>
 
-    <test name="Login Test">
+    <test name="Docsila_Test_Cases">
         <classes>
-            <class name="testCase.TC_01_LoginPage"/>
-            <class name="testCase.TC_02_LoginPageSorting"/>
+        <!--<class name="testCase.TC_01_LoginAndLogout"/> -->
+          <class name="testCase.TC_02_HomePage"/>
+           <class name="testCase.TC_03_PDF_DocumentListPage"/>
+          <!--  <class name="testCase.TC_04_PDF_PDFViewPage"/> -->
         </classes>
     </test>
 </suite>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Docsila Parallel Test Suite" parallel="tests" thread-count="3">
+    <listeners>
+        <listener class-name="utilities.ExtentReportManager"/>
+    </listeners>
+
+    <!-- Runs in its own browser -->
+    <test name="Login_Test">
+        <classes>
+            <class name="testCase.TC_01_LoginAndLogout"/>
+        </classes>
+    </test>
+
+    <!-- Runs in its own browser -->
+    <test name="HomePage_Test">
+        <classes>
+            <class name="testCase.TC_02_HomePage"/>
+        </classes>
+    </test>
+
+    <!-- TC_03 and TC_04 run sequentially in their own browser -->
+    <test name="PDF_Tests">
+        <classes>
+            <class name="testCase.TC_03_PDF_DocumentListPage"/>
+            <class name="testCase.TC_04_PDF_PDFViewPage"/>
+        </classes>
+    </test>
+</suite>
