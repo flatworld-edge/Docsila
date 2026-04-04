@@ -70,8 +70,8 @@ public class HomePage extends BasePage {
 
     public boolean isLogoDisplayed() {
         try {
-            System.out.println("🔍 Checking logo immediately...");
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            System.out.println("🔍 Checking if logo is displayed...");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             WebElement logo = wait.until(ExpectedConditions.visibilityOfElementLocated(docsilaLogo));
 
             if(logo.isDisplayed()) {
@@ -694,6 +694,26 @@ public class HomePage extends BasePage {
         } catch (Exception e) {
             System.out.println("✗ Error checking Truth Coverage badge tooltips: " + e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Click on the View Runs button for a specific document (eye icon in Actions column)
+     */
+    public void clickViewRunsForDocument(String documentName) {
+        try {
+            System.out.println("🔍 Clicking View Runs button for document: " + documentName);
+            By viewRunsButtonForDoc = By.xpath("//tbody/tr[td[1][normalize-space()='" + documentName + "'] or td[1]//*[normalize-space()='" + documentName + "']]//button[@title='View Runs']");
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebElement button = wait.until(ExpectedConditions.elementToBeClickable(viewRunsButtonForDoc));
+            button.click();
+            System.out.println("✓ Clicked View Runs button for: " + documentName);
+
+            // Wait for navigation
+            Thread.sleep(2000);
+        } catch (Exception e) {
+            System.out.println("✗ Error clicking View Runs button for '" + documentName + "': " + e.getMessage());
+            throw new RuntimeException("Failed to click View Runs button for: " + documentName, e);
         }
     }
 }

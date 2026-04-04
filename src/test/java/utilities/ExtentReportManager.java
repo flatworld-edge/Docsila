@@ -8,134 +8,138 @@ import com.aventstack.extentreports.reporter.configuration.Theme;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import org.openqa.selenium.WebDriver;
-import testCase.BaseClass;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
+/**
+ * ExtentReports listener for generating test execution reports
+ */
 public class ExtentReportManager implements ITestListener {
 
-    public ExtentSparkReporter sparkReporter;
-    public ExtentReports extent;
-    public ExtentTest test;
-
-    String repName;
+    private static ExtentReports extent;
+    private static ExtentSparkReporter sparkReporter;
+    private static ThreadLocal<ExtentTest> extentTest = new ThreadLocal<>();
+    private static String reportPath;
 
     @Override
-    public void onStart(ITestContext testContext) {
-        // Ensure the reports directory exists
-        File reportsDir = new File(System.getProperty("user.dir") + "\\reports\\");
-        if (!reportsDir.exists()) {
-            reportsDir.mkdirs();
+    public void onStart(ITestContext context) {
+        // Generate report file name with timestamp
+        String timestamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        String reportFileName = "Test-Report-" + timestamp + ".html";
+
+        // Create reports directory if it doesn't exist
+        String reportDir = System.getProperty("user.dir") + File.separator + "reports";
+        File reportsFolder = new File(reportDir);
+        if (!reportsFolder.exists()) {
+            reportsFolder.mkdirs();
         }
 
-        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
-        repName = "Test-Report-" + timeStamp + ".html";
-        sparkReporter = new ExtentSparkReporter(System.getProperty("user.dir") + "\\reports\\" + repName);
+        reportPath = reportDir + File.separator + reportFileName;
 
+        // Initialize ExtentSparkReporter
+        sparkReporter = new ExtentSparkReporter(reportPath);
+
+        // Configure report settings
         sparkReporter.config().setDocumentTitle("Docsila Automation Report");
         sparkReporter.config().setReportName("Docsila Functional Testing");
         sparkReporter.config().setTheme(Theme.DARK);
+        sparkReporter.config().setTimeStampFormat("MMM dd, yyyy HH:mm:ss");
 
+        // Initialize ExtentReports
         extent = new ExtentReports();
         extent.attachReporter(sparkReporter);
+
+        // Add system information
         extent.setSystemInfo("Application", "Docsila");
-        extent.setSystemInfo("Module", "Login");
-        extent.setSystemInfo("User Name", System.getProperty("user.name"));
-        extent.setSystemInfo("Environment", "QA");
+        extent.setSystemInfo("Environment", "Dev");
+        extent.setSystemInfo("User", System.getProperty("user.name"));
+        extent.setSystemInfo("OS", System.getProperty("os.name"));
+        extent.setSystemInfo("Java Version", System.getProperty("java.version"));
 
-        String os = testContext.getCurrentXmlTest().getParameter("os");
-        if (os != null) extent.setSystemInfo("Operating System", os);
-
-        String browser = testContext.getCurrentXmlTest().getParameter("browser");
-        if (browser != null) extent.setSystemInfo("Browser", browser);
-
-        List<String> includedGroups = testContext.getCurrentXmlTest().getIncludedGroups();
-        if (includedGroups != null && !includedGroups.isEmpty()) {
-            extent.setSystemInfo("Groups", includedGroups.toString());
-        }
-    }
-
-    @Override
-    public void onTestSuccess(ITestResult result) {
-        test = extent.createTest(result.getTestClass().getName());
-        test.assignCategory(result.getMethod().getGroups());
-        test.log(Status.PASS, result.getMethod().getMethodName() + " got successfully executed");
-    }
-
-    @Override
-    public void onTestFailure(ITestResult result) {
-        test = extent.createTest(result.getTestClass().getName());
-        test.assignCategory(result.getMethod().getGroups());
-        test.log(Status.FAIL, result.getMethod().getMethodName() + " got failed");
-
-        Throwable throwable = result.getThrowable();
-        if (throwable != null) {
-            test.log(Status.INFO, throwable.getMessage());
-        }
-
-        try {
-            // Get the test instance and capture screenshot
-            Object testInstance = result.getInstance();
-            if (testInstance instanceof BaseClass) {
-                BaseClass baseClass = (BaseClass) testInstance;
-                String imgPath = baseClass.captureScreen(result.getMethod().getMethodName());
-                test.addScreenCaptureFromPath(imgPath);
-            }
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onTestSkipped(ITestResult result) {
-        test = extent.createTest(result.getTestClass().getName());
-        test.assignCategory(result.getMethod().getGroups());
-        test.log(Status.SKIP, result.getMethod().getMethodName() + " got skipped");
-        Throwable throwable = result.getThrowable();
-        if (throwable != null) {
-            test.log(Status.INFO, throwable.getMessage());
-        }
+        System.out.println("\n════════════════════════════════════════════════════════════════");
+        System.out.println("   📊 EXTENT REPORT INITIALIZED");
+        System.out.println("   Report: " + reportFileName);
+        System.out.println("════════════════════════════════════════════════════════════════\n");
     }
 
     @Override
     public void onTestStart(ITestResult result) {
-        // Not used, but required by interface
+        // Create a new test in the report
+        ExtentTest test = extent.createTest(result.getTestClass().getName() + "." + result.getMethod().getMethodName());
+        extentTest.set(test);
+
+        System.out.println("\n▶ Starting Test: " + result.getMethod().getMethodName());
+    }
+
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        extentTest.get().log(Status.PASS, "Test Passed: " + result.getMethod().getMethodName());
+        extentTest.get().pass("Test execution completed successfully");
+
+        System.out.println("✅ Test Passed: " + result.getMethod().getMethodName());
+    }
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        extentTest.get().log(Status.FAIL, "Test Failed: " + result.getMethod().getMethodName());
+        extentTest.get().fail(result.getThrowable());
+
+        // Try to capture screenshot if possible
+        try {
+            Object testInstance = result.getInstance();
+            if (testInstance instanceof testCase.BaseClass) {
+                testCase.BaseClass baseClass = (testCase.BaseClass) testInstance;
+                String screenshotPath = baseClass.captureScreen(result.getMethod().getMethodName());
+                extentTest.get().addScreenCaptureFromPath(screenshotPath, "Failure Screenshot");
+                System.out.println("📸 Screenshot captured: " + screenshotPath);
+            }
+        } catch (Exception e) {
+            System.out.println("⚠ Could not capture screenshot: " + e.getMessage());
+        }
+
+        System.out.println("❌ Test Failed: " + result.getMethod().getMethodName());
+        System.out.println("   Error: " + result.getThrowable().getMessage());
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        extentTest.get().log(Status.SKIP, "Test Skipped: " + result.getMethod().getMethodName());
+        extentTest.get().skip(result.getThrowable());
+
+        System.out.println("⏭ Test Skipped: " + result.getMethod().getMethodName());
+    }
+
+    @Override
+    public void onFinish(ITestContext context) {
+        // Flush the report
+        if (extent != null) {
+            extent.flush();
+        }
+
+        System.out.println("\n════════════════════════════════════════════════════════════════");
+        System.out.println("   📊 EXTENT REPORT GENERATED");
+        System.out.println("   Report Path: " + reportPath);
+        System.out.println("════════════════════════════════════════════════════════════════\n");
+
+        // Try to open the report automatically
+        try {
+            File reportFile = new File(reportPath);
+            if (reportFile.exists() && Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(reportFile.toURI());
+                System.out.println("✓ Report opened in browser");
+            }
+        } catch (IOException e) {
+            System.out.println("⚠ Could not open report automatically: " + e.getMessage());
+            System.out.println("   Please open manually: " + reportPath);
+        }
     }
 
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
-        // Not used, but required by interface
-    }
-
-    @Override
-    public void onTestFailedWithTimeout(ITestResult result) {
-        onTestFailure(result);
-    }
-
-    @Override
-    public void onFinish(ITestContext testContext) {
-        extent.flush();
-
-        String pathOfExtentReport = System.getProperty("user.dir") + "\\reports\\" + repName;
-        File extentReport = new File(pathOfExtentReport);
-
-        System.out.println("\n==============================================");
-        System.out.println("Test Execution Completed!");
-        System.out.println("Report Location: " + pathOfExtentReport);
-        System.out.println("==============================================\n");
-
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(extentReport.toURI());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // Not used
     }
 }

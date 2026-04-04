@@ -225,11 +225,11 @@ public class PDFCotentView extends BasePage {
     public void clickExpandButton() {
         try {
             System.out.println("🔽 Clicking Expand file list button...");
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
             WebElement button = wait.until(ExpectedConditions.elementToBeClickable(expandFileListButton));
             button.click();
             System.out.println("✓ Clicked Expand button - File list should now be visible");
-            Thread.sleep(1000); // Wait for animation
+            Thread.sleep(500); // Wait for animation
         } catch (Exception e) {
             System.out.println("✗ Error clicking expand button: " + e.getMessage());
             throw new RuntimeException("Failed to click expand button", e);
@@ -279,17 +279,17 @@ public class PDFCotentView extends BasePage {
      */
     public boolean isCollapseButtonDisplayed() {
         try {
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-            // Try primary locator (polyline-based)
-            WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseFileListButton));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
+            // Try title-based locator first (more reliable)
+            WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseButtonAlternative));
             System.out.println("✓ Collapse file list button is displayed");
             return button.isDisplayed();
         } catch (Exception e1) {
             try {
-                // Try alternative locator (title-based)
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseButtonAlternative));
-                System.out.println("✓ Collapse file list button is displayed (using alternative locator)");
+                // Fallback to polyline-based locator
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(2));
+                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseFileListButton));
+                System.out.println("✓ Collapse file list button is displayed (using polyline locator)");
                 return button.isDisplayed();
             } catch (Exception e2) {
                 System.out.println("✗ Collapse file list button is NOT displayed");
@@ -305,21 +305,21 @@ public class PDFCotentView extends BasePage {
     public String getCollapseButtonTooltip() {
         try {
             System.out.println("🔍 Getting collapse button tooltip...");
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
 
-            // Try primary locator (button with polyline)
+            // Try title-based locator first (more reliable)
             try {
-                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseFileListButton));
+                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseButtonAlternative));
                 String tooltip = button.getAttribute("title");
                 System.out.println("✓ Collapse button tooltip: '" + tooltip + "'");
                 return tooltip;
             } catch (Exception e1) {
-                System.out.println("⚠ Primary locator failed, trying alternative...");
+                System.out.println("⚠ Title locator failed, trying polyline locator...");
 
-                // Try alternative locator (button with title attribute)
-                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseButtonAlternative));
+                // Fallback to polyline-based locator
+                WebElement button = wait.until(ExpectedConditions.visibilityOfElementLocated(collapseFileListButton));
                 String tooltip = button.getAttribute("title");
-                System.out.println("✓ Collapse button tooltip (alternative): '" + tooltip + "'");
+                System.out.println("✓ Collapse button tooltip (polyline): '" + tooltip + "'");
                 return tooltip;
             }
         } catch (Exception e) {
@@ -334,22 +334,22 @@ public class PDFCotentView extends BasePage {
     public void clickCollapseButton() {
         try {
             System.out.println("🔼 Clicking Collapse file list button...");
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(3));
 
-            // Try primary locator (button with polyline)
+            // Try title-based locator first (more reliable)
             try {
-                WebElement button = wait.until(ExpectedConditions.elementToBeClickable(collapseFileListButton));
-                button.click();
-                System.out.println("✓ Clicked Collapse button - File list should now be hidden");
-                Thread.sleep(1000); // Wait for animation
-            } catch (Exception e1) {
-                System.out.println("⚠ Primary locator failed, trying alternative...");
-
-                // Try alternative locator (button with title attribute)
                 WebElement button = wait.until(ExpectedConditions.elementToBeClickable(collapseButtonAlternative));
                 button.click();
-                System.out.println("✓ Clicked Collapse button (alternative) - File list should now be hidden");
-                Thread.sleep(1000); // Wait for animation
+                System.out.println("✓ Clicked Collapse button - File list should now be hidden");
+                Thread.sleep(500); // Wait for animation
+            } catch (Exception e1) {
+                System.out.println("⚠ Title locator failed, trying polyline locator...");
+
+                // Fallback to polyline-based locator
+                WebElement button = wait.until(ExpectedConditions.elementToBeClickable(collapseFileListButton));
+                button.click();
+                System.out.println("✓ Clicked Collapse button (polyline) - File list should now be hidden");
+                Thread.sleep(500); // Wait for animation
             }
         } catch (Exception e) {
             System.out.println("✗ Error clicking collapse button: " + e.getMessage());

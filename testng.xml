@@ -7,10 +7,12 @@
 
     <test name="Docsila_Test_Cases">
         <classes>
-        <!--<class name="testCase.TC_01_LoginAndLogout"/> -->
-          <class name="testCase.TC_02_HomePage"/>
-           <class name="testCase.TC_03_PDF_DocumentListPage"/>
-          <!--  <class name="testCase.TC_04_PDF_PDFViewPage"/> -->
-        </classes>
-    </test>
-</suite>
+        <!-- <class name="testCase.TC_01_LoginAndLogout"/> -->
+        <!--  <class name="testCase.TC_02_HomePage"/> -->
+        <!--   <class name="testCase.TC_03_PDF_DocumentListPage"/> -->
+            <!-- <class name="testCase.TC_04_PDF_PDFViewPage"/>-->
+            <!-- <class name="testCase.TC_05_ValidationDetailsPage"/>-->
+            <class name="testCase.TC_06_FilterValidation"/>
+         </classes>
+     </test>
+ </suite>

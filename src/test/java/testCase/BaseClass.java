@@ -30,6 +30,7 @@ public class BaseClass {
         ChromeOptions options = new ChromeOptions();
 
         // Use a dedicated automation profile directory to avoid "Chrome is already running" error
+        // Using a FIXED profile directory so Chrome remembers MFA login
         String automationProfile = "C:\\Selenium\\ChromeProfile";
 
         // Create the directory if it doesn't exist
@@ -50,9 +51,13 @@ public class BaseClass {
 
         try {
             driver = new ChromeDriver(options);
+            System.out.println("✓ Chrome launched successfully!");
         } catch (Exception e) {
-            System.out.println("Error launching Chrome: " + e.getMessage());
-            System.out.println("Make sure ChromeDriver is installed and Chrome browser is available.");
+            System.err.println("❌ Error launching Chrome: " + e.getMessage());
+            System.err.println("Troubleshooting steps:");
+            System.err.println("1. Close all Chrome browser windows and try again");
+            System.err.println("2. If problem persists, delete C:\\Selenium\\ChromeProfile and restart");
+            System.err.println("3. Check if ChromeDriver is compatible with your Chrome version");
             throw e;
         }
 
@@ -60,8 +65,21 @@ public class BaseClass {
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
         driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
 
-        System.out.println("Navigating to: " + prop.getProperty("appURL"));
-        driver.get(prop.getProperty("appURL"));
+        String appURL = prop.getProperty("appURL");
+        if (appURL == null || appURL.isEmpty()) {
+            throw new RuntimeException("appURL property is missing in config.properties file!");
+        }
+
+        System.out.println("Navigating to: " + appURL);
+        driver.get(appURL);
+
+        // Add wait for page to fully load and any redirects to complete
+        try {
+            Thread.sleep(5000);
+            System.out.println("✓ Initial page load completed, waiting for redirects and content to render...");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void loadConfig() {
